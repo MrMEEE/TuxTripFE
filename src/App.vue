@@ -6,16 +6,8 @@ import { apiService } from '@/services/apiService';
 import { useAuthStore } from '@/stores/authStore';
 
 const router = useRouter();
-// const isSidebarToggled = ref(false); // REMOVE THIS - theme will manage
 
 const authStore = useAuthStore();
-
-// REMOVE THIS FUNCTION ENTIRELY - theme will manage sidebar toggle
-// const toggleSidebar = () => {
-//   isSidebarToggled.value = !isSidebarToggled.value;
-//   document.body.classList.toggle('sidebar-toggled');
-//   document.getElementById('accordionSidebar').classList.toggle('toggled');
-// };
 
 const handleLogout = () => {
   authStore.clearAuth();
@@ -33,23 +25,15 @@ onMounted(() => {
     }
   });
 
-  // Handle the initial state of the sidebar based on theme's JS
-  // You might need a small delay for SB Admin 2 JS to initialize
-  // Or simply rely on the default theme behavior.
-  // If you still need a way to programmatically close the sidebar on mobile after navigation
-  // without fighting the theme, it might be more complex.
+  // No manual sidebar toggling or class manipulation here.
+  // Rely on sb-admin-2.min.js for sidebar behavior.
 });
 
 // Remove this router.afterEach if its purpose was purely to manage isSidebarToggled state,
 // as the theme's JS will handle the actual toggling.
-// If you need it for other reasons, keep it but remove DOM manipulation.
 router.afterEach(() => {
-    // If the SB Admin 2 theme handles toggling, you might not need this here.
-    // Or you'd trigger a theme-specific close function if one exists.
-    // For now, let's remove the direct DOM manipulation.
-    // if (window.innerWidth < 768) {
-    //     // Potentially trigger the theme's sidebar close if needed.
-    // }
+    // If you need any specific actions after route change that the theme doesn't handle,
+    // you can add them here, but avoid direct DOM manipulation of sidebar classes.
 });
 
 const showSidebarAndTopbar = ref(true);
@@ -59,7 +43,8 @@ watch(router.currentRoute, (newRoute) => {
 </script>
 
 <template>
-    <div id="wrapper"> <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar" v-if="authStore.isAuthenticated && showSidebarAndTopbar">
+    <div id="wrapper">
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar" v-if="authStore.isAuthenticated && showSidebarAndTopbar">
 
             <RouterLink class="sidebar-brand d-flex align-items-center justify-content-center" to="/">
                 <div class="sidebar-brand-icon rotate-n-15">
@@ -109,8 +94,14 @@ watch(router.currentRoute, (newRoute) => {
                     </RouterLink>
                 </li>
             </template>
-        </ul>
 
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
         <div id="content-wrapper" class="d-flex flex-column">
 
             <div id="content">
@@ -141,47 +132,36 @@ watch(router.currentRoute, (newRoute) => {
                         </li>
                     </ul>
                 </nav>
-
                 <div class="container-fluid">
                     <RouterView />
                 </div>
-            </div>
+                </div>
             <footer class="sticky-footer bg-white" v-if="authStore.isAuthenticated && showSidebarAndTopbar">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Din Digitale Kørebog 2024</span>
+                        <span>Copyright &copy; Din Digitale Kørebog {{ new Date().getFullYear() }}</span>
                     </div>
                 </div>
             </footer>
+            </div>
         </div>
-    </div>
     <a class="scroll-to-top rounded" href="#page-top" v-if="authStore.isAuthenticated && showSidebarAndTopbar">
         <i class="fas fa-angle-up"></i>
     </a>
-
-    <div class="text-center d-none d-md-inline sidebar-toggle-button-fix">
-      <button class="rounded-circle border-0" id="sidebarToggle"></button>
-    </div>
 </template>
 
 <style scoped>
-/* Add this to give the #sidebarToggle button a place if it's not managed by Vue's v-if */
-.sidebar-toggle-button-fix {
-    position: absolute; /* Or adjust positioning as needed for layout */
-    bottom: 1rem;
-    right: 1rem; /* Adjust based on your desired layout */
-    z-index: 99; /* Ensure it's above other elements if positioned absolutely */
-}
 body {
     margin: 0;
     padding: 0;
 }
 #app {
-    display: contents;
+    display: contents; /* Ensures Vue app doesn't break body/html layout */
 }
 .sidebar .nav-item .nav-link {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+/* Removed .sidebar-toggle-button-fix as the #sidebarToggle button is now correctly inside the sidebar UL */
 </style>

@@ -34,18 +34,19 @@ const handleEditLocation = (location) => {
         <h1 class="h3 mb-4 text-gray-800">Lokationer</h1>
 
         <div class="row">
-            <div class="col-lg-6">
-                <LocationForm
+            <div class="col-12 mb-4"> <LocationForm
                     @location-created="handleLocationCreated"
                     @location-updated="handleLocationUpdated"
                     :editing-location="editingLocation"
                     ref="locationFormRef"
                 />
             </div>
-            <div class="col-lg-6">
-                <LocationList
+        </div>
+
+        <div class="row">
+            <div class="col-12"> <LocationList
                     @edit-location="handleEditLocation"
-                    @location-deleted="handleLocationCreated" # Re-use for now, or make a separate handler if needed
+                    @location-deleted="handleLocationCreated"
                     ref="locationListRef"
                 />
             </div>
