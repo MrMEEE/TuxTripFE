@@ -1,4 +1,6 @@
 import axios from 'axios';
+// DO NOT import authStore here to prevent circular dependency
+// import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -28,12 +30,9 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Token expired or invalid, clear token and redirect to login
-            localStorage.removeItem('jwt_token');
-            localStorage.removeItem('username');
-            localStorage.removeItem('is_admin');
-            // If you have a router, you might want to redirect:
-            // router.push('/login');
+            // Dispatch a custom event instead of directly calling authStore.logout()
+            // This decouples apiService from authStore.
+            window.dispatchEvent(new CustomEvent('unauthorized-access'));
             console.error("Authentication failed or token expired. Please log in again.");
         }
         return Promise.reject(error);
@@ -41,32 +40,66 @@ api.interceptors.response.use(
 );
 
 export const apiService = {
-    // Auth
+    // Auth - this now only performs the API call and returns the data
     login: async (username, password) => {
-        // This method will now ONLY return the response data.
-        // The authStore will handle setting localStorage and its own state.
         const response = await api.post('/login', { username, password });
+        return response.data; // authStore will handle storing token/user info
+    },
+    // The apiService doesn't manage localStorage for logout directly now
+    // It's handled by authStore's clearAuth triggered by the custom event.
+    // This logout function is effectively empty and might be removed if not used elsewhere.
+    logout: () => {
+        // No direct action here, it's triggered by the `unauthorized-access` event
+        // or by the `authStore.logout` which calls `clearAuth`.
+    },
+
+    // User Management (Admin)
+    getUsers: async () => {
+        const response = await api.get('/admin/users');
         return response.data;
     },
-    logout: () => {
-        // apiService's logout should only clear things directly related to API calls if any.
-        // localStorage clear is handled by authStore's logout action.
-        // No need to clear local storage here, the authStore will do it.
+    createUser: async (userData) => {
+        const response = await api.post('/admin/users', userData);
+        return response.data;
     },
-    // ... (rest of your apiService methods)
-    getUsers: async () => { /* ... */ },
-    createUser: async (userData) => { /* ... */ },
-    updateUser: async (userId, userData) => { /* ... */ },
-    deleteUser: async (userId) => { /* ... */ },
+    updateUser: async (userId, userData) => {
+        const response = await api.put(`/admin/users/${userId}`, userData);
+        return response.data;
+    },
+    deleteUser: async (userId) => {
+        const response = await api.delete(`/admin/users/${userId}`);
+        return response.data;
+    },
 
     // Location Management
-    lookupAddress: async (address) => { /* ... */ },
-    createLocation: async (locationData) => { /* ... */ },
-    getLocations: async () => { /* ... */ },
-    updateLocation: async (locationId, locationData) => { /* ... */ },
-    deleteLocation: async (locationId) => { /* ... */ },
+    lookupAddress: async (address) => {
+        const response = await api.get(`/lookup-address?address=${encodeURIComponent(address)}`);
+        return response.data;
+    },
+    createLocation: async (locationData) => {
+        const response = await api.post('/locations', locationData);
+        return response.data;
+    },
+    getLocations: async () => {
+        const response = await api.get('/locations');
+        return response.data;
+    },
+    updateLocation: async (locationId, locationData) => {
+        const response = await api.put(`/locations/${locationId}`, locationData);
+        return response.data;
+    },
+    deleteLocation: async (locationId) => {
+        const response = await api.delete(`/locations/${locationId}`);
+        return response.data;
+    },
 
     // Trip Management
-    createTrip: async (tripData) => { /* ... */ },
-    getTrips: async () => { /* ... */ }
+    createTrip: async (tripData) => {
+        const response = await api.post('/trips', tripData);
+        return response.data;
+    },
+    getTrips: async () => {
+        const response = await api.get('/trips');
+        return response.data;
+    }
 };
