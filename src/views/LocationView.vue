@@ -1,33 +1,54 @@
-<template>
-  <div class="locations-page">
-    <h2>Lokationsoversigt</h2>
-    <LocationForm @locationCreated="handleLocationCreated" />
-    <LocationList ref="locationListRef" />
-  </div>
-</template>
-
 <script setup>
+import { ref } from 'vue';
 import LocationForm from '@/components/LocationForm.vue';
 import LocationList from '@/components/LocationList.vue';
-import { ref } from 'vue';
 
-const locationListRef = ref(null);
+const locationListRef = ref(null); // Ref to access methods in LocationList
+const locationFormRef = ref(null); // Ref to access methods in LocationForm
+
+const editingLocation = ref(null); // State to hold the location being edited
 
 const handleLocationCreated = () => {
-  if (locationListRef.value) {
-    locationListRef.value.fetchLocations();
-  }
+    // When a location is created, refresh the list
+    if (locationListRef.value) {
+        locationListRef.value.fetchLocations();
+    }
+};
+
+const handleLocationUpdated = () => {
+    // When a location is updated, refresh the list and clear editing state
+    if (locationListRef.value) {
+        locationListRef.value.fetchLocations();
+    }
+    editingLocation.value = null; // Exit edit mode
+    // locationFormRef.value.resetForm(); // Reset the form after update
+};
+
+const handleEditLocation = (location) => {
+    editingLocation.value = { ...location }; // Create a copy to prevent direct mutation
 };
 </script>
 
-<style scoped>
-.locations-page {
-  padding: 0 20px;
-}
-h2 {
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 20px;
-  margin-bottom: 30px;
-}
-</style>
+<template>
+    <div class="container-fluid">
+        <h1 class="h3 mb-4 text-gray-800">Lokationer</h1>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <LocationForm
+                    @location-created="handleLocationCreated"
+                    @location-updated="handleLocationUpdated"
+                    :editing-location="editingLocation"
+                    ref="locationFormRef"
+                />
+            </div>
+            <div class="col-lg-6">
+                <LocationList
+                    @edit-location="handleEditLocation"
+                    @location-deleted="handleLocationCreated" # Re-use for now, or make a separate handler if needed
+                    ref="locationListRef"
+                />
+            </div>
+        </div>
+    </div>
+</template>
