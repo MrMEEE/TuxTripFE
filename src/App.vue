@@ -48,9 +48,9 @@ watch(router.currentRoute, (newRoute) => {
 
             <RouterLink class="sidebar-brand d-flex align-items-center justify-content-center" to="/">
                 <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
+                    <i class="fas fa-car"></i>
                 </div>
-                <div class="sidebar-brand-icon-text mx-3">Kørebog<sup>PWA</sup></div>
+                <div class="sidebar-brand-icon-text mx-3">TuxTrip</div>
             </RouterLink>
 
             <hr class="sidebar-divider my-0">
@@ -139,7 +139,7 @@ watch(router.currentRoute, (newRoute) => {
             <footer class="sticky-footer bg-white" v-if="authStore.isAuthenticated && showSidebarAndTopbar">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Din Digitale Kørebog {{ new Date().getFullYear() }}</span>
+                        <span>Copyright &copy; TuxTrip {{ new Date().getFullYear() }}</span>
                     </div>
                 </div>
             </footer>

@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <h1>Velkommen til Min Digitale Kørebog</h1>
+    <h1>TuxTrip</h1>
     <p>Registrer og administrer dine lokationer og ture her. Brug menuen øverst for at navigere.</p>
   </div>
 </template>
