@@ -7,7 +7,7 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: () => import('@/views/LoginView.vue'), // Assuming this is your login component
-        meta: { requiresAuth: false, hideSidebar: true } // <--- ADD THIS LINE
+        meta: { requiresAuth: false, hideSidebar: true }
     },
     {
         path: '/trips',
@@ -30,7 +30,7 @@ const routes = [
     },
     {
         path: '/',
-        redirect: '/trips' // Default redirect to trips page
+        redirect: '/trips' // Default redirect to trips page (this is a general redirect, not post-login specific)
     },
     // Catch all 404
     {
@@ -53,9 +53,10 @@ router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth && !isAuthenticated) {
         next('/login');
     } else if (to.meta.requiresAdmin && (!isAuthenticated || !isAdmin)) {
-        next('/trips');
+        next('/trips'); // Keep this redirect to trips if a non-admin tries to access admin page
     } else if (to.path === '/login' && isAuthenticated) {
-        next('/trips');
+        // If trying to go to login page but already logged in, redirect to dashboard
+        next('/'); // <--- CHANGED FROM '/trips' TO '/'
     } else {
         next();
     }

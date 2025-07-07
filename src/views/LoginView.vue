@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
-import { apiService } from '@/services/apiService'; // Import apiService here
+import { apiService } from '@/services/apiService';
 
 const username = ref('');
 const password = ref('');
@@ -13,28 +13,23 @@ const authStore = useAuthStore();
 const handleLogin = async () => {
     errorMessage.value = '';
     try {
-        // Perform the API call directly from the component
         const responseData = await apiService.login(username.value, password.value);
-        // Then, update the auth store's state with the response data
         authStore.token = responseData.access_token;
         authStore.username = responseData.username;
         authStore.isAdmin = responseData.is_admin;
         authStore.isAuthenticated = true;
 
-        // Also update localStorage here as the apiService.login no longer does it.
-        // This keeps `authStore` as the single source of truth for auth state.
         localStorage.setItem('jwt_token', responseData.access_token);
         localStorage.setItem('username', responseData.username);
-        localStorage.setItem('is_admin', responseData.is_admin.toString()); // Store boolean as string
+        localStorage.setItem('is_admin', responseData.is_admin.toString());
 
         // Redirect based on admin status
         if (authStore.isAdmin) {
-            router.push('/admin/users'); // Redirect admins to admin users page
+            router.push('/'); // <--- CHANGED FROM '/admin/users' TO '/'
         } else {
-            router.push('/trips'); // Redirect regular users to trips page
+            router.push('/'); // <--- CHANGED FROM '/trips' TO '/'
         }
     } catch (error) {
-        // Axios error handling
         if (error.response && error.response.data && error.response.data.message) {
             errorMessage.value = error.response.data.message;
         } else {
@@ -53,7 +48,7 @@ const handleLogin = async () => {
                     <div class="card-body p-0">
                         <div class="row">
                             <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-                            <div class="col-lg-6">
+                            <div>
                                 <div class="p-5">
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Velkommen til TuxTrip!</h1>
@@ -76,7 +71,7 @@ const handleLogin = async () => {
                                     <div v-if="errorMessage" class="alert alert-danger" role="alert">
                                         {{ errorMessage }}
                                     </div>
-                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
