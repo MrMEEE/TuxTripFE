@@ -1,8 +1,8 @@
 import axios from 'axios';
 // DO NOT import authStore here to prevent circular dependency
-// import { useAuthStore } from '@/stores/authStore';
+// import { useAuthStore } from '@/stores/authStore'; // This line correctly commented out
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5000/api'; // Ensure your API base URL is correct
 
 const api = axios.create({
     baseURL: API_URL,
@@ -100,6 +100,16 @@ export const apiService = {
     },
     getTrips: async () => {
         const response = await api.get('/trips');
+        return response.data;
+    },
+    // NEW: Update Trip
+    updateTrip: async (id, tripData) => {
+        const response = await api.put(`/trips/${id}`, tripData);
+        return response.data;
+    },
+    // NEW: Delete Trip
+    deleteTrip: async (id) => {
+        const response = await api.delete(`/trips/${id}`);
         return response.data;
     }
 };

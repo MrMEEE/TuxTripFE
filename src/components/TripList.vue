@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineExpose, defineEmits } from 'vue'; // Import defineEmits
 import { apiService } from '@/services/apiService';
-import { defineExpose } from 'vue'; // <--- Import defineExpose
 
 const trips = ref([]);
 const errorMessage = ref('');
 const loading = ref(true);
+
+// Define emits for parent communication
+const emits = defineEmits(['edit-trip', 'delete-trip']);
 
 const fetchTrips = async () => {
     loading.value = true;
@@ -20,11 +22,20 @@ const fetchTrips = async () => {
     }
 };
 
+// Method to handle edit button click
+const handleEdit = (trip) => {
+    emits('edit-trip', trip); // Emit 'edit-trip' event with the trip data
+};
+
+// Method to handle delete button click
+const handleDelete = (tripId) => {
+    emits('delete-trip', tripId); // Emit 'delete-trip' event with the trip ID
+};
+
 onMounted(fetchTrips);
 
-// <--- ADD THIS LINE TO EXPOSE fetchTrips TO THE PARENT COMPONENT
 defineExpose({
-    fetchTrips
+    fetchTrips // Keep fetchTrips exposed for refreshing the list from parent
 });
 </script>
 
@@ -55,7 +66,7 @@ defineExpose({
                             <th>Til</th>
                             <th>Formål</th>
                             <th>Afstand (km)</th>
-                        </tr>
+                            <th>Handlinger</th> </tr>
                     </thead>
                     <tbody>
                         <tr v-for="trip in trips" :key="trip.id">
@@ -64,6 +75,14 @@ defineExpose({
                             <td>{{ trip.end_location ? trip.end_location.name : 'Ukendt' }}</td>
                             <td>{{ trip.purpose }}</td>
                             <td>{{ trip.distance_km ? trip.distance_km + ' km' : 'N/A' }}</td>
+                            <td>
+                                <button @click="handleEdit(trip)" class="btn btn-info btn-sm mr-1">
+                                    <i class="fas fa-edit"></i> Rediger
+                                </button>
+                                <button @click="handleDelete(trip.id)" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Slet
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
