@@ -83,17 +83,6 @@ const lookupAddress = async () => {
     }, 300);
 };
 
-// Function to handle selection of a suggestion
-const selectSuggestion = (suggestion) => {
-    console.log("Selected suggestion:", suggestion); // Keep for debugging if needed
-    address.value = suggestion.display_name;
-    latitude.value = suggestion.latitude;   // <--- CHANGE THIS LINE
-    longitude.value = suggestion.longitude; // <--- CHANGE THIS LINE
-    console.log("Assigned latitude:", latitude.value); // Keep for debugging
-    console.log("Assigned longitude:", longitude.value); // Keep for debugging
-    suggestions.value = [];
-    showSuggestions.value = false;
-};
 
 const handleSubmit = async () => {
     errorMessage.value = '';
@@ -158,58 +147,11 @@ defineExpose({
             <h6 class="m-0 font-weight-bold text-primary">{{ editingLocation ? 'Rediger Lokation' : 'Opret Ny Lokation' }}</h6>
         </div>
         <div class="card-body">
-            <form @submit.prevent="handleSubmit">
-                <div class="mb-3">
-                    <label for="name" class="form-label">Navn</label>
-                    <input type="text" class="form-control" id="name" v-model="name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="address" class="form-label">Adresse</label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        id="address"
-                        v-model="address"
-                        @input="lookupAddress"
-                        autocomplete="off"
-                        required
-                    >
-                    <ul v-if="showSuggestions && suggestions.length" class="list-group position-absolute w-100 z-1000" style="z-index: 100;">
-                        <li v-for="suggestion in suggestions" :key="suggestion.place_id" @click="selectSuggestion(suggestion)" class="list-group-item list-group-item-action cursor-pointer">
-                            {{ suggestion.display_name }}
-                        </li>
-                    </ul>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="latitude" class="form-label">Breddegrad</label>
-                        <input type="number" step="any" class="form-control" id="latitude" v-model="latitude" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="longitude" class="form-label">Længdegrad</label>
-                        <input type="number" step="any" class="form-control" id="longitude" v-model="longitude" required>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Beskrivelse (valgfri)</label>
-                    <textarea class="form-control" id="description" rows="3" v-model="description"></textarea>
-                </div>
-
-                <div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
-                    {{ errorMessage }}
-                </div>
-                <div v-if="showSuccess" class="alert alert-success mt-3" role="alert">
-                    {{ successMessage }}
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    {{ editingLocation ? 'Opdater Lokation' : 'Opret Lokation' }}
-                </button>
-                <button type="button" class="btn btn-secondary ms-2" @click="resetForm" v-if="editingLocation">
-                    Annuller Redigering
-                </button>
-            </form>
+            
         </div>
+        <button class="btn btn-success btn-sm" @click="openCreateLocationModal">
+                <i class="fas fa-plus"></i> Opret Ny Lokation
+            </button>
     </div>
 </template>
 

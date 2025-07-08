@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import LocationForm from '@/components/LocationForm.vue';
 import LocationList from '@/components/LocationList.vue';
+import { apiService } from '@/services/apiService';
+import Swal from 'sweetalert2';
 
 const locationListRef = ref(null); // Ref to access methods in LocationList
 const locationFormRef = ref(null); // Ref to access methods in LocationForm
@@ -27,26 +29,62 @@ const handleLocationUpdated = () => {
 const handleEditLocation = (location) => {
     editingLocation.value = { ...location }; // Create a copy to prevent direct mutation
 };
+
+// Method to handle 'delete-location' event from LocationList
+const handleDeleteLocation = async (locationId) => {
+    // Show a confirmation dialog before deleting
+    const result = await Swal.fire({
+        title: 'Er du sikker?',
+        text: "Du kan ikke fortryde dette!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ja, slet den!',
+        cancelButtonText: 'Annuller'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await apiService.deleteLocation(locationId);
+            Swal.fire(
+                'Slettet!',
+                'Lokationen er blevet slettet.',
+                'success'
+            );
+            // Refresh the trip list after deletion
+            if (locationListRef.value && locationListRef.value.fetchLocations) {
+                locationListRef.value.fetchLocations();
+            }
+        } catch (error) {
+            console.error('Error deleting location:', error);
+            Swal.fire(
+                'Fejl!',
+                'Kunne ikke slette lokationen. Prøv igen.',
+                'error'
+            );
+        }
+    }
+};
 </script>
 
 <template>
     <div class="container-fluid">
         <h1 class="h3 mb-4 text-gray-800">Lokationer</h1>
 
-        <div class="row">
-            <div class="col-12 mb-4"> <LocationForm
-                    @location-created="handleLocationCreated"
-                    @location-updated="handleLocationUpdated"
-                    :editing-location="editingLocation"
-                    ref="locationFormRef"
-                />
-            </div>
+        
+
+        <div class="mb-3">
+            <button class="btn btn-success btn-sm" @click="openCreateLocationModal">
+                <i class="fas fa-plus"></i> Opret Ny Lokation
+            </button>
         </div>
+
 
         <div class="row">
             <div class="col-12"> <LocationList
                     @edit-location="handleEditLocation"
-                    @location-deleted="handleLocationCreated"
+                    @delete-location="handleDeleteLocation"
                     ref="locationListRef"
                 />
             </div>
