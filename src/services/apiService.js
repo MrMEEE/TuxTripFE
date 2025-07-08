@@ -111,5 +111,15 @@ export const apiService = {
     deleteTrip: async (id) => {
         const response = await api.delete(`/trips/${id}`);
         return response.data;
-    }
+    },
+    getRouteData(start_lat, start_lon, end_lat, end_lon) {
+        return api.get('/route-data', {
+            params: {
+                start_lat,
+                start_lon,
+                end_lat,
+                end_lon
+            }
+        }).then(response => response.data);
+    },
 };
