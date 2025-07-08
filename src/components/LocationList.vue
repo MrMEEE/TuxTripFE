@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'; // Add 'computed'
+import { ref, onMounted, computed, defineExpose, defineEmits } from 'vue'; // <--- Ensure defineExpose is imported here!
 import { apiService } from '@/services/apiService';
 import LocationFormModal from './LocationFormModal.vue'; // Import the new modal component
 
@@ -42,13 +42,15 @@ const toggleSortOrder = () => {
 
 
 const fetchLocations = async () => {
+    console.log('LocationList: fetchLocations method called.');
     loading.value = true;
     errorMessage.value = '';
     try {
         locations.value = await apiService.getLocations();
+        console.log('LocationList: Locations fetched successfully:', locations.value.length, 'items.');
     } catch (error) {
         errorMessage.value = error.message || 'Fejl ved hentning af lokationer.';
-        console.error('Fejl ved hentning af lokationer:', error);
+        console.error('LocationList: Error fetching locations:', error);
     } finally {
         loading.value = false;
     }
@@ -80,6 +82,11 @@ const handleDeleteLocation = (locationId) => {
 };
 
 onMounted(fetchLocations);
+
+// >>>>>>>>>>>>>>>>>>>>>> ADD THIS LINE <<<<<<<<<<<<<<<<<<<<<<<<
+defineExpose({
+    fetchLocations // Expose the fetchLocations function to the parent component
+});
 </script>
 
 <template>

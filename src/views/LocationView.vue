@@ -6,25 +6,8 @@ import { apiService } from '@/services/apiService';
 import Swal from 'sweetalert2';
 
 const locationListRef = ref(null); // Ref to access methods in LocationList
-const locationFormRef = ref(null); // Ref to access methods in LocationForm
-
 const editingLocation = ref(null); // State to hold the location being edited
 
-const handleLocationCreated = () => {
-    // When a location is created, refresh the list
-    if (locationListRef.value) {
-        locationListRef.value.fetchLocations();
-    }
-};
-
-const handleLocationUpdated = () => {
-    // When a location is updated, refresh the list and clear editing state
-    if (locationListRef.value) {
-        locationListRef.value.fetchLocations();
-    }
-    editingLocation.value = null; // Exit edit mode
-    // locationFormRef.value.resetForm(); // Reset the form after update
-};
 
 const handleEditLocation = (location) => {
     editingLocation.value = { ...location }; // Create a copy to prevent direct mutation
@@ -54,7 +37,12 @@ const handleDeleteLocation = async (locationId) => {
             );
             // Refresh the trip list after deletion
             if (locationListRef.value && locationListRef.value.fetchLocations) {
+                console.log('Confirmed: locationListRef.value is NOT null:', locationListRef.value); // Should see this if it's not null
+                console.log('Confirmed: fetchLocations method exists:', typeof locationListRef.value.fetchLocations); // Should see 'function'
                 locationListRef.value.fetchLocations();
+            }else {
+                console.warn('locationListRef.value is:', locationListRef.value); // What is its actual value?
+                console.warn('locationListRef.value.fetchLocations is:', locationListRef.value ? locationListRef.value.fetchLocations : 'not applicable (ref is null)'); // More precise
             }
         } catch (error) {
             console.error('Error deleting location:', error);
@@ -71,15 +59,6 @@ const handleDeleteLocation = async (locationId) => {
 <template>
     <div class="container-fluid">
         <h1 class="h3 mb-4 text-gray-800">Lokationer</h1>
-
-        
-
-        <div class="mb-3">
-            <button class="btn btn-success btn-sm" @click="openCreateLocationModal">
-                <i class="fas fa-plus"></i> Opret Ny Lokation
-            </button>
-        </div>
-
 
         <div class="row">
             <div class="col-12"> <LocationList
