@@ -155,11 +155,11 @@ defineExpose({
                             <td>{{ location.longitude }}</td>
                             <td>{{ location.description }}</td>
                             <td>
-                                <button @click="editLocation(location)" class="btn btn-warning btn-sm me-1">
-                                    <i class="fas fa-edit"></i>
+                                <button @click="editLocation(location)" class="btn btn-info btn-sm mr-1">
+                                    <i class="fas fa-edit"></i> Rediger
                                 </button>
                                 <button @click="deleteLocation(location.id)" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i>
+                                    <i class="fas fa-trash"></i> Slet
                                 </button>
                             </td>
                         </tr>
