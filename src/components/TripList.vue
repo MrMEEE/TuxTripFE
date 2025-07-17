@@ -1,23 +1,25 @@
 <script setup>
-import { ref, onMounted, defineExpose, defineEmits, computed } from 'vue'; // Import computed
+import { ref, onMounted, defineExpose, defineEmits, computed } from 'vue';
 import { apiService } from '@/services/apiService';
-import { format } from 'date-fns'; // Import date-fns for date formatting
+import { format } from 'date-fns';
+import Swal from 'sweetalert2';
+import TripFormModal from '@/components/TripFormModal.vue'; // Import the modal
 
 const trips = ref([]);
 const errorMessage = ref('');
 const loading = ref(true);
 
+// Modal state
+const showTripFormModal = ref(false);
+const currentTripToEdit = ref(null); // Holds trip data when editing
+
 // Add sorting state
 const sortOrder = ref('desc'); // 'asc' for ascending, 'desc' for descending
-
-// Define emits for parent communication
-const emits = defineEmits(['edit-trip', 'delete-trip']);
 
 const fetchTrips = async () => {
     loading.value = true;
     errorMessage.value = '';
     try {
-        // Assuming apiService.getTrips() returns an array of trip objects
         trips.value = await apiService.getTrips();
     } catch (error) {
         errorMessage.value = error.message || 'Fejl ved hentning af ture.';
@@ -27,68 +29,93 @@ const fetchTrips = async () => {
     }
 };
 
-// Computed property for sorted trips
 const sortedTrips = computed(() => {
     if (!trips.value || trips.value.length === 0) {
         return [];
     }
-
-    // Create a shallow copy to avoid mutating the original array
     const sorted = [...trips.value];
-
     sorted.sort((a, b) => {
-        // Convert date strings to Date objects for accurate comparison
-        // Ensure the date string is in a format Date constructor can parse reliably (e.g., YYYY-MM-DD)
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
-
-        // Check for invalid dates before comparison
         if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-            // Handle invalid dates (e.g., put them at the end, or skip sorting for them)
-            // For now, if dates are invalid, maintain original order relative to each other
             return 0;
         }
-
         if (sortOrder.value === 'asc') {
-            return dateA.getTime() - dateB.getTime(); // Ascending (oldest first)
+            return dateA.getTime() - dateB.getTime();
         } else {
-            return dateB.getTime() - dateA.getTime(); // Descending (newest first)
+            return dateB.getTime() - dateA.getTime();
         }
     });
-
     return sorted;
 });
 
-// Function to toggle sort order
 const toggleSortOrder = () => {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
 };
 
-// Method to handle edit button click
-const handleEdit = (trip) => {
-    emits('edit-trip', trip); // Emit 'edit-trip' event with the trip data
+// --- Modal Handling ---
+const openCreateTripModal = () => {
+    currentTripToEdit.value = null; // Ensure form is reset for new trip
+    showTripFormModal.value = true;
 };
 
-// Method to handle delete button click
-const handleDelete = (tripId) => {
-    emits('delete-trip', tripId); // Emit 'delete-trip' event with the trip ID
+const handleEdit = (trip) => {
+    currentTripToEdit.value = { ...trip }; // Pass a copy
+    showTripFormModal.value = true;
+};
+
+const handleTripSaved = () => {
+    showTripFormModal.value = false;
+    fetchTrips(); // Refresh the list
+};
+
+const handleCloseModal = () => {
+    showTripFormModal.value = false;
+    currentTripToEdit.value = null; // Clear edit data on close
+};
+
+// --- Action Handlers ---
+const handleDelete = async (tripId) => {
+    const result = await Swal.fire({
+        title: 'Er du sikker?',
+        text: "Du kan ikke fortryde dette!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ja, slet den!',
+        cancelButtonText: 'Annuller'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await apiService.deleteTrip(tripId);
+            Swal.fire(
+                'Slettet!',
+                'Turen er blevet slettet.',
+                'success'
+            );
+            fetchTrips();
+        } catch (error) {
+            console.error('Error deleting trip:', error);
+            Swal.fire(
+                'Fejl!',
+                'Kunne ikke slette turen. Prøv igen.',
+                'error'
+            );
+        }
+    }
 };
 
 onMounted(fetchTrips);
-
-defineExpose({
-    fetchTrips // Keep fetchTrips exposed for refreshing the list from parent
-});
 </script>
 
 <template>
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Dine ture</h6>
-            <button class="btn btn-outline-secondary btn-sm" @click="toggleSortOrder">
-                Sortér dato:
-                <span v-if="sortOrder === 'asc'">Ældste først <i class="fas fa-arrow-up"></i></span>
-                <span v-else>Nyeste først <i class="fas fa-arrow-down"></i></span>
+            <button class="btn btn-success btn-sm" @click="openCreateTripModal">
+                <i class="fas fa-plus"></i> Opret ny tur
             </button>
         </div>
         <div class="card-body">
@@ -139,14 +166,19 @@ defineExpose({
                 </table>
             </div>
         </div>
+
+        <TripFormModal
+            :show="showTripFormModal"
+            :tripData="currentTripToEdit"
+            @close="handleCloseModal"
+            @tripSaved="handleTripSaved"
+        />
     </div>
 </template>
 
 <style scoped>
-/* Dine styles */
-
-/* Basic styling for sortable header */
+/* Your existing styles */
 th {
-    user-select: none; /* Prevent text selection when clicking sort icon */
+    user-select: none;
 }
 </style>

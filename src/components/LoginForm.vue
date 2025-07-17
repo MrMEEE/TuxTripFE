@@ -32,13 +32,17 @@
                                                 required
                                             />
                                         </div>
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">
-                                            Login
+                                        <button type="submit" class="btn btn-primary btn-user btn-block" :disabled="authStore.loading">
+                                            <span v-if="authStore.loading">Logger ind...</span>
+                                            <span v-else>Login</span>
                                         </button>
                                     </form>
                                     <hr />
-                                    <div v-if="message" :class="['alert', messageType === 'success' ? 'alert-success' : 'alert-danger']">
-                                        {{ message }}
+                                    <div v-if="authStore.authError" class="alert alert-danger">
+                                        {{ authStore.authError }}
+                                    </div>
+                                    <div v-if="successMessage" class="alert alert-success">
+                                        {{ successMessage }}
                                     </div>
                                     <div class="text-center">
                                         <a class="small" href="#" @click.prevent="goToRegister">Opret konto!</a>
@@ -57,30 +61,45 @@
 import { ref } from 'vue';
 import { apiService } from '@/services/apiService';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore'; // Import your auth store
 
 const username = ref('');
 const password = ref('');
-const message = ref('');
-const messageType = ref('');
+const successMessage = ref('');
 const router = useRouter();
+const authStore = useAuthStore(); // Get an instance of the store
 
 const handleLogin = async () => {
-    message.value = '';
-    messageType.value = '';
+    // Clear any previous success messages
+    successMessage.value = '';
+    // Clear any previous errors from the store
+    authStore.authError = null;
+
     try {
-        const response = await apiService.login(username.value, password.value);
-        message.value = 'Login succesfuld!';
-        messageType.value = 'success';
-        // Redirect to home page or dashboard after successful login
-        router.push('/');
+        // 1. Call the API service directly from the component
+        const responseData = await apiService.login(username.value, password.value);
+        
+        // 2. Pass the successful response data to the store's login action
+        await authStore.login(responseData);
+        
+        // 3. Set a temporary success message
+        successMessage.value = 'Login succesfuld!';
+        
+        // 4. Redirect after a small delay to let the user see the success message
+        setTimeout(() => {
+            router.push('/');
+        }, 1000);
+
     } catch (error) {
-        message.value = error.message || 'Login fejlede. Prøv igen.';
-        messageType.value = 'danger';
-        console.error('Login fejl:', error);
+        // The error message is now handled directly by the store
+        // The store's login action will catch the error and set authStore.authError
+        // The `v-if` condition in the template will display it.
+        console.error('Login error:', error);
     }
 };
 
 const goToRegister = () => {
+    // This is good, no changes needed here.
     router.push('/register');
 };
 </script>
@@ -92,13 +111,4 @@ const goToRegister = () => {
     background-position: center;
     background-size: cover;
 }
-
-/* REMOVED: The body style should not be in a scoped component.
-   It should be handled globally by App.vue or your main CSS import. */
-/*
-body {
-    margin: 0;
-    padding: 0;
-}
-*/
 </style>

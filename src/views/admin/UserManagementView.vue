@@ -1,24 +1,25 @@
 <template>
-    <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800">Brugeradministration (Admin)</h1>
-        <p>Dette er siden for administratorer til at administrere brugere.</p>
+  <div class="admin-users-page">
+    <h2>Brugeradministration</h2>
+    <p class="mb-4">Her kan du se, oprette, redigere og slette brugere.</p>
 
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Brugere</h6>
-            </div>
-            <div class="card-body">
-                <p>Her kommer en liste over brugere og funktioner til at oprette, redigere og slette dem.</p>
-                </div>
-        </div>
-    </div>
+    <UserList />
+
+  </div>
 </template>
 
 <script setup>
-// You can add your user fetching and management logic here later
-// For now, it's just a placeholder
+import UserList from '@/components/UserList.vue';
 </script>
 
 <style scoped>
-/* Add any specific styles for this view here */
+.admin-users-page {
+  padding: 0 20px;
+}
+h2 {
+  color: #2c3e50;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
 </style>
