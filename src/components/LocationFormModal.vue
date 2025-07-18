@@ -97,8 +97,8 @@ const lookupAddress = async () => {
                 showSuggestions.value = false;
             }
         } catch (error) {
-            formErrors.value.addressLookup = error.message || 'Fejl ved adressesøgning.';
-            console.error('Fejl ved adressesøgning:', error);
+            formErrors.value.addressLookup = error.message || 'Error during address lookup.';
+            console.error('Error during address lookup:', error);
             suggestions.value = [];
             showSuggestions.value = false;
         }
@@ -132,11 +132,11 @@ const validateForm = () => {
     let isValid = true;
 
     if (!locationForm.value.name) {
-        formErrors.value.name = 'Navn er påkrævet.';
+        formErrors.value.name = 'Name is required.';
         isValid = false;
     }
     if (!locationForm.value.address) {
-        formErrors.value.address = 'Adresse er påkrævet.';
+        formErrors.value.address = 'Address is required.';
         isValid = false;
     }
 
@@ -144,11 +144,11 @@ const validateForm = () => {
     const lonNum = parseFloat(locationForm.value.longitude);
 
     if (locationForm.value.latitude === null || isNaN(latNum)) {
-        formErrors.value.latitude = 'Breddegrad er påkrævet og skal være et tal.';
+        formErrors.value.latitude = 'Latitude is required and must be a number.';
         isValid = false;
     }
     if (locationForm.value.longitude === null || isNaN(lonNum)) {
-        formErrors.value.longitude = 'Længdegrad er påkrævet og skal være et tal.';
+        formErrors.value.longitude = 'Longitude is required and must be a number.';
         isValid = false;
     }
 
@@ -183,7 +183,7 @@ const handleSubmit = async () => {
         handleClose(); // Close the modal
     } catch (error) {
         console.error('Error saving location:', error.response?.data || error.message);
-        formErrors.value.api = error.response?.data?.message || 'Fejl ved lagring af lokation.';
+        formErrors.value.api = error.response?.data?.message || 'Error saving location.';
     } finally {
         isSubmitting.value = false;
     }
@@ -215,7 +215,7 @@ const handleAddressInputBlur = () => {
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ locationForm.id ? 'Rediger Lokation' : 'Opret Ny Lokation' }}</h5>
+                    <h5 class="modal-title">{{ locationForm.id ? 'Edit Location' : 'Create New Location' }}</h5>
                     <button type="button" class="close" @click="handleClose" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -226,12 +226,12 @@ const handleAddressInputBlur = () => {
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group">
-                            <label for="locationName">Navn</label>
+                            <label for="locationName">Name</label>
                             <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.name }" id="locationName" v-model="locationForm.name">
                             <div class="invalid-feedback" v-if="formErrors.name">{{ formErrors.name }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="locationAddress">Adresse</label>
+                            <label for="locationAddress">Address</label>
                             <input
                                 type="text"
                                 class="form-control"
@@ -256,22 +256,22 @@ const handleAddressInputBlur = () => {
                             </ul>
                         </div>
                         <div class="form-group">
-                            <label for="locationLatitude">Breddegrad</label>
+                            <label for="locationLatitude">Latitude</label>
                             <input type="number" step="any" class="form-control" :class="{ 'is-invalid': formErrors.latitude }" id="locationLatitude" v-model="locationForm.latitude">
                             <div class="invalid-feedback" v-if="formErrors.latitude">{{ formErrors.latitude }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="locationLongitude">Længdegrad</label>
+                            <label for="locationLongitude">Longitude</label>
                             <input type="number" step="any" class="form-control" :class="{ 'is-invalid': formErrors.longitude }" id="locationLongitude" v-model="locationForm.longitude">
                             <div class="invalid-feedback" v-if="formErrors.longitude">{{ formErrors.longitude }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="locationDescription">Beskrivelse (Valgfri)</label>
+                            <label for="locationDescription">Description (Optional)</label>
                             <textarea class="form-control" id="locationDescription" v-model="locationForm.description" rows="3"></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Gemmer...' : (locationForm.id ? 'Opdater Lokation' : 'Opret Lokation') }}
+                            {{ isSubmitting ? 'Saving...' : (locationForm.id ? 'Update Location' : 'Create Location') }}
                         </button>
                     </form>
                 </div>

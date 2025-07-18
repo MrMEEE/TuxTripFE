@@ -65,20 +65,20 @@ watch(router.currentRoute, (newRoute) => {
             <hr class="sidebar-divider">
 
             <div class="sidebar-heading">
-                Funktioner
+                Functions
             </div>
 
             <li class="nav-item">
                 <RouterLink class="nav-link" to="/locations">
                     <i class="fas fa-fw fa-map-marker-alt"></i>
-                    <span>Lokationer</span>
+                    <span>Locations</span>
                 </RouterLink>
             </li>
 
             <li class="nav-item">
                 <RouterLink class="nav-link" to="/trips">
                     <i class="fas fa-fw fa-road"></i>
-                    <span>Ture</span>
+                    <span>Trips</span>
                 </RouterLink>
             </li>
 
@@ -90,7 +90,7 @@ watch(router.currentRoute, (newRoute) => {
                 <li class="nav-item">
                     <RouterLink class="nav-link" to="/admin/users">
                         <i class="fas fa-fw fa-users-cog"></i>
-                        <span>Brugerstyring</span>
+                        <span>User Management</span>
                     </RouterLink>
                 </li>
             </template>
@@ -115,18 +115,18 @@ watch(router.currentRoute, (newRoute) => {
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ authStore.username || 'Bruger' }}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ authStore.username || 'User' }}</span>
                                 <img class="img-profile rounded-circle" src="/sb-admin-2-theme/img/undraw_profile.svg" alt="Profile">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profil
+                                    Profile
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" @click.prevent="handleLogout">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logud
+                                    Log Out
                                 </a>
                             </div>
                         </li>

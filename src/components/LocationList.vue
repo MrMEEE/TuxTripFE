@@ -49,7 +49,7 @@ const fetchLocations = async () => {
         locations.value = await apiService.getLocations();
         console.log('LocationList: Locations fetched successfully:', locations.value.length, 'items.');
     } catch (error) {
-        errorMessage.value = error.message || 'Fejl ved hentning af lokationer.';
+        errorMessage.value = error.message || 'Error fetching locations.';
         console.error('LocationList: Error fetching locations:', error);
     } finally {
         loading.value = false;
@@ -92,9 +92,9 @@ defineExpose({
 <template>
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Dine Lokationer</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Your Locations</h6>
             <button class="btn btn-success btn-sm" @click="openCreateLocationModal">
-                <i class="fas fa-plus"></i> Opret Ny Lokation
+                <i class="fas fa-plus"></i> Create New Location
             </button>
         </div>
         <div class="card-body">
@@ -102,26 +102,26 @@ defineExpose({
                 <div class="spinner-border text-primary" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
-                <p class="mt-2">Henter lokationer...</p>
+                <p class="mt-2">Fetching locations...</p>
             </div>
             <div v-else-if="errorMessage" class="alert alert-danger" role="alert">
                 {{ errorMessage }}
             </div>
             <div v-else-if="sortedLocations.length === 0" class="alert alert-info" role="alert">
-                Ingen lokationer fundet. Opret din første lokation!
+                No locations found. Create your first location!
             </div>
             <div v-else class="table-responsive">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th @click="toggleSortOrder" style="cursor: pointer;">
-                                Navn
+                                Name
                                 <i :class="{ 'fas fa-sort-up': sortOrder === 'asc', 'fas fa-sort-down': sortOrder === 'desc' }"></i>
                             </th>
-                            <th>Adresse</th>
-                            <th>Breddegrad</th>
-                            <th>Længdegrad</th>
-                            <th>Handlinger</th>
+                            <th>Address</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,10 +132,10 @@ defineExpose({
                             <td>{{ location.longitude }}</td>
                             <td>
                                 <button @click="openEditLocationModal(location)" class="btn btn-info btn-sm mr-1">
-                                    <i class="fas fa-edit"></i> Rediger
+                                    <i class="fas fa-edit"></i> Edit
                                 </button>
                                 <button @click="handleDeleteLocation(location.id)" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i> Slet
+                                    <i class="fas fa-trash"></i> Delete
                                 </button>
                             </td>
                         </tr>

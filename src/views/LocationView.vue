@@ -17,22 +17,22 @@ const handleEditLocation = (location) => {
 const handleDeleteLocation = async (locationId) => {
     // Show a confirmation dialog before deleting
     const result = await Swal.fire({
-        title: 'Er du sikker?',
-        text: "Du kan ikke fortryde dette!",
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Ja, slet den!',
-        cancelButtonText: 'Annuller'
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
     });
 
     if (result.isConfirmed) {
         try {
             await apiService.deleteLocation(locationId);
             Swal.fire(
-                'Slettet!',
-                'Lokationen er blevet slettet.',
+                'Deleted!',
+                'The location has been deleted.',
                 'success'
             );
             // Refresh the trip list after deletion
@@ -47,8 +47,8 @@ const handleDeleteLocation = async (locationId) => {
         } catch (error) {
             console.error('Error deleting location:', error);
             Swal.fire(
-                'Fejl!',
-                'Kunne ikke slette lokationen. Prøv igen.',
+                'Error!',
+                'Could not delete the location. Please try again.',
                 'error'
             );
         }
@@ -58,7 +58,7 @@ const handleDeleteLocation = async (locationId) => {
 
 <template>
     <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800">Lokationer</h1>
+        <h1 class="h3 mb-4 text-gray-800">Locations</h1>
 
         <div class="row">
             <div class="col-12"> <LocationList

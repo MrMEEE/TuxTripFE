@@ -134,13 +134,13 @@ const setupRoutingMachine = () => {
                 mapApiError.value = null; // Clear any previous errors
             } else {
                 mapCalculatedDistance.value = null;
-                mapApiError.value = 'Ingen rute fundet for de valgte punkter.';
+                mapApiError.value = 'No route found for the selected points.';
             }
         });
 
         routeControl.value.on('routingerror', (e) => {
             console.error('Routing error:', e.error.message);
-            mapApiError.value = `Fejl ved ruteberegning: ${e.error.message}`;
+            mapApiError.value = `Error calculating route: ${e.error.message}`;
             mapCalculatedDistance.value = null;
         });
 
@@ -229,15 +229,15 @@ const useMapDistance = () => {
 
 const validateForm = () => {
     formErrors.value = {};
-    if (!tripForm.value.date) formErrors.value.date = 'Dato er påkrævet.';
-    if (!tripForm.value.start_location_id) formErrors.value.start_location_id = 'Startlokation er påkrævet.';
-    if (!tripForm.value.end_location_id) formErrors.value.end_location_id = 'Slutlokation er påkrævet.';
-    if (!tripForm.value.purpose) formErrors.value.purpose = 'Formål er påkrævet.';
+    if (!tripForm.value.date) formErrors.value.date = 'Date is required.';
+    if (!tripForm.value.start_location_id) formErrors.value.start_location_id = 'Start location is required.';
+    if (!tripForm.value.end_location_id) formErrors.value.end_location_id = 'End location is required.';
+    if (!tripForm.value.purpose) formErrors.value.purpose = 'Purpose is required.';
 
     if (tripForm.value.distance_km !== null && tripForm.value.distance_km !== '') {
         const parsedDistance = parseFloat(tripForm.value.distance_km);
         if (isNaN(parsedDistance) || parsedDistance <= 0) {
-            formErrors.value.distance_km = 'Afstand skal være et positivt tal.';
+            formErrors.value.distance_km = 'Distance must be a positive number.';
         }
     }
     return Object.keys(formErrors.value).length === 0;
@@ -271,7 +271,7 @@ const handleSubmit = async () => {
         handleClose();
     } catch (error) {
         console.error('Error saving trip:', error.response?.data || error.message);
-        formErrors.value.api = error.response?.data?.message || 'Fejl ved lagring af tur.';
+        formErrors.value.api = error.response?.data?.message || 'Error saving trip.';
     } finally {
         isSubmitting.value = false;
     }
@@ -285,7 +285,7 @@ const handleClose = () => {
 const createReturnTrip = async () => {
     // Ensure both start and end locations are selected for a valid return trip
     if (!tripForm.value.start_location_id || !tripForm.value.end_location_id) {
-        mapApiError.value = 'Vælg både start- og slutlokation for at oprette en returtur.';
+        mapApiError.value = 'Select both start and end locations to create a return trip.';
         return;
     }
 
@@ -297,7 +297,7 @@ const createReturnTrip = async () => {
         const originalEndLoc = getLocationById(tripForm.value.end_location_id);
 
         if (!originalStartLoc || !originalEndLoc) {
-            mapApiError.value = 'Kunne ikke finde detaljer for de valgte lokationer.';
+            mapApiError.value = 'Could not find details for the selected locations.';
             isSubmitting.value = false;
             return;
         }
@@ -310,7 +310,7 @@ const createReturnTrip = async () => {
             date: tripForm.value.date, // Or new Date().toISOString().slice(0, 10) for today, or add 1 day
             start_location_id: tripForm.value.end_location_id, // Start of return is end of original
             end_location_id: tripForm.value.start_location_id,   // End of return is start of original
-            purpose: `Retur: ${originalEndLoc.name} til ${originalStartLoc.name}`, // Dynamic purpose
+            purpose: `Return: ${originalEndLoc.name} to ${originalStartLoc.name}`, // Dynamic purpose
             // You can decide if the distance should be null (for re-calculation by map)
             // or if it should be copied from mapCalculatedDistance or original tripForm.distance_km
             distance_km: mapCalculatedDistance.value ? parseFloat(mapCalculatedDistance.value) : null,
@@ -333,7 +333,7 @@ const createReturnTrip = async () => {
 
     } catch (error) {
         console.error('Error creating return trip:', error.response?.data || error.message);
-        mapApiError.value = error.response?.data?.message || 'Fejl ved oprettelse af returtur.';
+        mapApiError.value = error.response?.data?.message || 'Error creating return trip.';
     } finally {
         isSubmitting.value = false;
     }
@@ -347,7 +347,7 @@ const createReturnTrip = async () => {
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ tripForm.id ? 'Rediger tur' : 'Opret ny tur' }}</h5>
+                    <h5 class="modal-title">{{ tripForm.id ? 'Edit Trip' : 'Create New Trip' }}</h5>
                     <button type="button" class="close" @click="handleClose" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -358,58 +358,58 @@ const createReturnTrip = async () => {
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group">
-                            <label for="tripDate">Dato</label>
+                            <label for="tripDate">Date</label>
                             <input type="date" class="form-control" :class="{ 'is-invalid': formErrors.date }" id="tripDate" v-model="tripForm.date">
                             <div class="invalid-feedback" v-if="formErrors.date">{{ formErrors.date }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="startLocation">Fra Lokation</label>
+                            <label for="startLocation">From Location</label>
                             <select class="form-control" :class="{ 'is-invalid': formErrors.start_location_id }" id="startLocation" v-model="tripForm.start_location_id">
-                                <option :value="null" disabled>Vælg lokation</option>
+                                <option :value="null" disabled>Select location</option>
                                 <option v-for="location in locations" :key="location.id" :value="location.id">{{ location.name }}</option>
                             </select>
                             <div class="invalid-feedback" v-if="formErrors.start_location_id">{{ formErrors.start_location_id }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="endLocation">Til Lokation</label>
+                            <label for="endLocation">To Location</label>
                             <select class="form-control" :class="{ 'is-invalid': formErrors.end_location_id }" id="endLocation" v-model="tripForm.end_location_id">
-                                <option :value="null" disabled>Vælg lokation</option>
+                                <option :value="null" disabled>Select location</option>
                                 <option v-for="location in locations" :key="location.id" :value="location.id">{{ location.name }}</option>
                             </select>
                             <div class="invalid-feedback" v-if="formErrors.end_location_id">{{ formErrors.end_location_id }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="purpose">Formål</label>
+                            <label for="purpose">Purpose</label>
                             <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.purpose }" id="purpose" v-model="tripForm.purpose">
                             <div class="invalid-feedback" v-if="formErrors.purpose">{{ formErrors.purpose }}</div>
                         </div>
                         
                         <div class="form-group">
-                            <label>Rutevisning og Afstand:</label>
+                            <label>Route Visualization and Distance:</label>
                             <div id="tripMap" style="height: 300px; width: 100%; border: 1px solid #ddd; margin-bottom: 10px;"></div>
                             <div v-if="mapApiError" class="alert alert-warning" role="alert">
                                 {{ mapApiError }}
                             </div>
                             <div v-if="mapCalculatedDistance !== null" class="d-flex justify-content-between align-items-center">
-                                <strong>Beregnet afstand: {{ mapCalculatedDistance }} km</strong>
-                                <button type="button" class="btn btn-sm btn-info" @click="useMapDistance">Brug denne afstand</button>
+                                <strong>Calculated distance: {{ mapCalculatedDistance }} km</strong>
+                                <button type="button" class="btn btn-sm btn-info" @click="useMapDistance">Use this distance</button>
                             </div>
-                            <p v-else class="text-muted">Vælg start- og slutlokationer for at se ruten på kortet.</p>
+                            <p v-else class="text-muted">Select start and end locations to see the route on the map.</p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="distance">Afstand (km)</label>
+                            <label for="distance">Distance (km)</label>
                             <input type="number" step="0.1" class="form-control" :class="{ 'is-invalid': formErrors.distance_km }" id="distance" v-model="tripForm.distance_km">
                             <div class="invalid-feedback" v-if="formErrors.distance_km">{{ formErrors.distance_km }}</div>
-                            <small class="form-text text-muted">Lad være tom for automatisk beregning baseret på lokationer, eller brug "Brug denne afstand" knappen.</small>
+                            <small class="form-text text-muted">Leave empty for automatic calculation based on locations, or use the "Use this distance" button.</small>
                         </div>
                         
                         <button type="button" class="btn btn-primary" @click="createReturnTrip" :disabled="isSubmitting || !tripForm.start_location_id || !tripForm.end_location_id" v-if="tripForm.id !== null">
-                           {{ isSubmitting ? 'Opretter retur...' : 'Opret retur' }}
+                           {{ isSubmitting ? 'Creating return...' : 'Create return' }}
                         </button>
 
                         <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Gemmer...' : (tripForm.id ? 'Opdater tur' : 'Opret tur') }}
+                            {{ isSubmitting ? 'Saving...' : (tripForm.id ? 'Update Trip' : 'Create Trip') }}
                         </button>
                     </form>
                 </div>

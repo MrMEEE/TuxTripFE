@@ -1,7 +1,7 @@
 <template>
   <div class="admin-users-page">
-    <h2>Brugeradministration</h2>
-    <p class="mb-4">Her kan du se, oprette, redigere og slette brugere.</p>
+    <h2>User Administration</h2>
+    <p class="mb-4">Here you can view, create, edit, and delete users.</p>
 
     <UserList />
 

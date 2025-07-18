@@ -7,8 +7,8 @@ import TripList from '@/components/TripList.vue';
 
 <template>
     <div class="container-fluid">
-        <h1 class="h3 mb-2 text-gray-800">Ture Oversigt</h1>
-        <p class="mb-4">Her kan du se, oprette, redigere og slette dine ture.</p>
+        <h1 class="h3 mb-2 text-gray-800">Trip Overview</h1>
+        <p class="mb-4">Here you can view, create, edit, and delete your trips.</p>
 
         <TripList />
     </div>

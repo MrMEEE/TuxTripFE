@@ -5,7 +5,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ isEditMode ? 'Rediger Bruger' : 'Opret Ny Bruger' }}</h5>
+                    <h5 class="modal-title">{{ isEditMode ? 'Edit User' : 'Create New User' }}</h5>
                     <button type="button" class="close" @click="handleClose" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -16,7 +16,7 @@
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group mb-3">
-                            <label for="username">Brugernavn</label>
+                            <label for="username">Username</label>
                             <input type="text" class="form-control" id="username" v-model="userForm.username" required>
                         </div>
                         <div v-if="!isEditMode" class="form-group mb-3">
@@ -24,7 +24,7 @@
                             <input type="password" class="form-control" id="password" v-model="userForm.password" required>
                         </div>
                         <div v-if="!isEditMode" class="form-group mb-3">
-                            <label for="confirmPassword">Gentag Password</label>
+                            <label for="confirmPassword">Repeat Password</label>
                             <input type="password" class="form-control" id="confirmPassword" v-model="userForm.confirmPassword" required>
                         </div>
                         <div class="form-group form-check mb-3">
@@ -33,7 +33,7 @@
                         </div>
                         
                         <button type="submit" class="btn btn-primary">
-                            {{ isEditMode ? 'Opdater Bruger' : 'Opret Bruger' }}
+                            {{ isEditMode ? 'Update User' : 'Create User' }}
                         </button>
                     </form>
                 </div>
@@ -98,7 +98,7 @@ const handleSubmit = () => {
     formErrors.value = {};
 
     if (!isEditMode.value && userForm.value.password !== userForm.value.confirmPassword) {
-        formErrors.value.passwordMismatch = 'Passwords matcher ikke.';
+        formErrors.value.passwordMismatch = 'Passwords do not match.';
         return;
     }
 

@@ -1,24 +1,24 @@
 <template>
   <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <h6 class="m-0 font-weight-bold text-primary">Eksisterende brugere</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Existing Users</h6>
         <button class="btn btn-success btn-sm" @click="openCreateModal">
-            <i class="fas fa-plus"></i> Opret Ny Bruger
+            <i class="fas fa-plus"></i> Create New User
         </button>
     </div>
     <div class="card-body">
       <div v-if="apiMessage" :class="['alert', apiMessageType === 'success' ? 'alert-success' : 'alert-danger']">
         {{ apiMessage }}
       </div>
-      <div v-if="!users.length && apiMessageType !== 'info'" class="text-center text-muted">Ingen brugere fundet.</div>
+      <div v-if="!users.length && apiMessageType !== 'info'" class="text-center text-muted">No users found.</div>
       <div v-else class="table-responsive">
           <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
               <thead>
                   <tr>
                       <th>ID</th>
-                      <th>Brugernavn</th>
+                      <th>Username</th>
                       <th>Admin</th>
-                      <th>Handlinger</th>
+                      <th>Actions</th>
                   </tr>
               </thead>
               <tbody>
@@ -29,8 +29,8 @@
                           <input type="checkbox" :checked="user.is_admin" @change="toggleAdminStatus(user.id, $event.target.checked)">
                       </td>
                       <td>
-                          <button @click="openEditModal(user)" class="btn btn-sm btn-info me-2">Rediger</button>
-                          <button @click="deleteUser(user.id)" class="btn btn-sm btn-danger" :disabled="user.id === currentUserId">Slet</button>
+                          <button @click="openEditModal(user)" class="btn btn-sm btn-info me-2">Edit</button>
+                          <button @click="deleteUser(user.id)" class="btn btn-sm btn-danger" :disabled="user.id === currentUserId">Delete</button>
                       </td>
                   </tr>
               </tbody>
@@ -72,15 +72,15 @@ const fetchUsers = async () => {
         const data = await apiService.getUsers();
         users.value = data;
         if (users.value.length === 0) {
-            apiMessage.value = 'Hentede ingen brugere fra databasen.';
+            apiMessage.value = 'Fetched no users from the database.';
             apiMessageType.value = 'info';
         } else {
-            apiMessage.value = `Hentede ${users.value.length} brugere.`;
+            apiMessage.value = `Fetched ${users.value.length} users.`;
             apiMessageType.value = 'success';
         }
     } catch (error) {
-        console.error('Fejl ved hentning af brugere:', error);
-        apiMessage.value = `Fejl ved indlæsning af brugere: ${error.response?.data?.message || error.message}`;
+        console.error('Error fetching users:', error);
+        apiMessage.value = `Error loading users: ${error.response?.data?.message || error.message}`;
         apiMessageType.value = 'danger';
     }
 };
@@ -93,18 +93,18 @@ const handleUserSaved = async (formData) => {
     try {
         if (formData.id) {
             await apiService.updateUser(formData.id, formData);
-            apiMessage.value = 'Bruger opdateret!';
+            apiMessage.value = 'User updated!';
         } else {
             await apiService.createUser(formData);
-            apiMessage.value = 'Bruger oprettet!';
+            apiMessage.value = 'User created!';
         }
         apiMessageType.value = 'success';
         showModal.value = false;
         fetchUsers();
     } catch (error) {
-        apiMessage.value = error.response?.data?.message || 'Fejl ved lagring af bruger.';
+        apiMessage.value = error.response?.data?.message || 'Error saving user.';
         apiMessageType.value = 'danger';
-        console.error('Fejl:', error);
+        console.error('Error:', error);
     } finally {
         isSubmitting.value = false;
     }
@@ -123,21 +123,21 @@ const openEditModal = (user) => {
 const toggleAdminStatus = async (userId, isAdmin) => {
     try {
         await apiService.updateUser(userId, { is_admin: isAdmin });
-        apiMessage.value = `Bruger ID ${userId} admin status opdateret.`;
+        apiMessage.value = `User ID ${userId} admin status updated.`;
         apiMessageType.value = 'success';
     } catch (error) {
-        apiMessage.value = `Fejl ved opdatering af admin status for bruger ID ${userId}: ${error.response?.data?.message || error.message}`;
+        apiMessage.value = `Error updating admin status for user ID ${userId}: ${error.response?.data?.message || error.message}`;
         apiMessageType.value = 'danger';
         fetchUsers();
-        console.error('Fejl ved opdatering af admin status:', error);
+        console.error('Error updating admin status:', error);
     }
 };
 
 const deleteUser = async (userId) => {
     if (userId === currentUserId.value) {
         Swal.fire({
-            title: 'Fejl!',
-            text: 'Du kan ikke slette din egen administratorbruger.',
+            title: 'Error!',
+            text: 'You cannot delete your own administrator user.',
             icon: 'error',
             confirmButtonText: 'OK'
         });
@@ -145,30 +145,30 @@ const deleteUser = async (userId) => {
     }
     
     const result = await Swal.fire({
-        title: 'Er du sikker?',
-        text: 'Du kan ikke fortryde dette!',
+        title: 'Are you sure?',
+        text: 'You won\'t be able to revert this!',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ja, slet den!',
-        cancelButtonText: 'Annuller'
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
     });
 
     if (result.isConfirmed) {
         try {
             const response = await apiService.deleteUser(userId);
             Swal.fire(
-                'Slettet!',
-                'Brugeren er blevet slettet.',
+                'Deleted!',
+                'The user has been deleted.',
                 'success'
             );
             fetchUsers();
         } catch (error) {
-            console.error('Fejl ved sletning af bruger:', error);
+            console.error('Error deleting user:', error);
             Swal.fire(
-                'Fejl!',
-                error.response?.data?.message || 'Kunne ikke slette brugeren. Prøv igen.',
+                'Error!',
+                error.response?.data?.message || 'Could not delete the user. Please try again.',
                 'error'
             );
         }
