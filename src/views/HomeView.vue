@@ -1,11 +1,14 @@
 <template>
   <div class="home">
-    <h1>TuxTrip</h1>
-    <p>Registrer og administrer dine lokationer og ture her. Brug menuen øverst for at navigere.</p>
+    <h1>{{ $t('dashboard.welcome') }}</h1>
+    <p>{{ $t('dashboard.overviewSubtitle') }}</p>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'; // Import useI18n
+
+const i18n = useI18n(); // Initialize useI18n
 // No components or advanced logic needed here anymore
 </script>
 

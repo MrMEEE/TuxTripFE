@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import { apiService } from '@/services/apiService';
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 const emit = defineEmits(['tripCreated']);
+const i18n = useI18n(); // Initialize useI18n
 
 const tripDate = ref('');
 const startLocationId = ref('');
@@ -33,7 +35,7 @@ onMounted(async () => {
     const today = new Date();
     tripDate.value = today.toISOString().split('T')[0];
   } catch (error) {
-    errorMessage.value = 'Kunne ikke hente lokationer: ' + error.message;
+    errorMessage.value = i18n.global.t('trips.errorFetchingLocations') + ': ' + error.message;
     console.error('Fejl ved hentning af lokationer:', error);
   }
 });
@@ -54,7 +56,7 @@ const createTrip = async () => {
     };
 
     const response = await apiService.createTrip(tripData);
-    successMessage.value = response.message || 'Tur(e) oprettet succesfuldt!';
+    successMessage.value = response.message || i18n.global.t('trips.tripCreatedSuccessfully');
     showSuccess.value = true;
     emit('tripCreated'); // Informer forælderkomponenten om, at en tur er oprettet
 
@@ -71,7 +73,7 @@ const createTrip = async () => {
     }, 5000);
 
   } catch (error) {
-    errorMessage.value = error.message || 'Fejl ved oprettelse af tur.';
+    errorMessage.value = error.message || i18n.global.t('trips.errorCreatingTrip');
     console.error('Fejl ved oprettelse af tur:', error);
   }
 };
@@ -80,16 +82,16 @@ const createTrip = async () => {
 <template>
   <div class="card shadow mb-4">
     <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary">Opret ny tur</h6>
+      <h6 class="m-0 font-weight-bold text-primary">{{ $t('trips.createNewTrip') }}</h6>
     </div>
     <div class="card-body">
       <form @submit.prevent="createTrip">
         <div class="mb-3">
-          <label for="tripDate" class="form-label">Dato</label>
+          <label for="tripDate" class="form-label">{{ $t('trips.date') }}</label>
           <input type="date" class="form-control" id="tripDate" v-model="tripDate" required>
         </div>
         <div class="mb-3">
-          <label for="startLocation" class="form-label">Startlokation</label>
+          <label for="startLocation" class="form-label">{{ $t('trips.startLocation') }}</label>
           <select class="form-control" id="startLocation" v-model="startLocationId" required>
             <option v-for="location in locations" :key="location.id" :value="location.id">
               {{ location.name }}
@@ -97,7 +99,7 @@ const createTrip = async () => {
           </select>
         </div>
         <div class="mb-3">
-          <label for="endLocation" class="form-label">Slutlokation</label>
+          <label for="endLocation" class="form-label">{{ $t('trips.endLocation') }}</label>
           <select class="form-control" id="endLocation" v-model="endLocationId" required>
             <option v-for="location in locations" :key="location.id" :value="location.id">
               {{ location.name }}
@@ -105,15 +107,15 @@ const createTrip = async () => {
           </select>
         </div>
         <div class="mb-3">
-          <label for="purpose" class="form-label">Formål</label>
+          <label for="purpose" class="form-label">{{ $t('trips.purpose') }}</label>
           <input type="text" class="form-control" id="purpose" v-model="purpose" required>
         </div>
 
         <div class="form-check mb-3">
           <input type="checkbox" class="form-check-input" id="isReturnTrip" v-model="isReturnTrip">
-          <label class="form-check-label" for="isReturnTrip">Opret returkørsel?</label>
+          <label class="form-check-label" for="isReturnTrip">{{ $t('trips.createReturnTrip') }}</label>
         </div>
-        <button type="submit" class="btn btn-primary">Opret Tur</button>
+        <button type="submit" class="btn btn-primary">{{ $t('trips.createTrip') }}</button>
       </form>
 
       <div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">

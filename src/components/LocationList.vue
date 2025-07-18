@@ -2,10 +2,13 @@
 import { ref, onMounted, computed, defineExpose, defineEmits } from 'vue'; // <--- Ensure defineExpose is imported here!
 import { apiService } from '@/services/apiService';
 import LocationFormModal from './LocationFormModal.vue'; // Import the new modal component
+import Swal from 'sweetalert2'; // Import Swal
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 const locations = ref([]);
 const errorMessage = ref('');
 const loading = ref(true);
+const i18n = useI18n(); // Initialize useI18n
 
 // Modal state
 const showLocationModal = ref(false);
@@ -42,15 +45,15 @@ const toggleSortOrder = () => {
 
 
 const fetchLocations = async () => {
-    console.log('LocationList: fetchLocations method called.');
+    console.log('LocationList: fetchLocations method called.'); // Consider translating this log message too
     loading.value = true;
     errorMessage.value = '';
     try {
         locations.value = await apiService.getLocations();
-        console.log('LocationList: Locations fetched successfully:', locations.value.length, 'items.');
+        console.log('LocationList: Locations fetched successfully:', locations.value.length, 'items.'); // Consider translating this log message too
     } catch (error) {
-        errorMessage.value = error.message || 'Error fetching locations.';
-        console.error('LocationList: Error fetching locations:', error);
+        errorMessage.value = error.message || i18n.global.t('locations.errorFetchingLocations');
+        console.error('LocationList: Error fetching locations:', error); // Consider translating this log message too
     } finally {
         loading.value = false;
     }
@@ -77,8 +80,36 @@ const handleLocationSaved = () => {
 };
 
 // Method to handle delete button click
-const handleDeleteLocation = (locationId) => {
-    emits('delete-location', locationId); // Emit 'delete-location' event with the trip ID
+const handleDeleteLocation = async (locationId) => {
+    const result = await Swal.fire({
+        title: i18n.global.t('common.areYouSure'),
+        text: i18n.global.t('common.cannotRevert'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: i18n.global.t('common.yesDeleteIt'),
+        cancelButtonText: i18n.global.t('common.cancel')
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await apiService.deleteLocation(locationId);
+            Swal.fire(
+                i18n.global.t('locations.locationDeleted'),
+                i18n.global.t('locations.locationDeleted'), // Re-using for consistency
+                'success'
+            );
+            fetchLocations(); // Directly call fetchLocations here
+        } catch (error) {
+            console.error('Error deleting location:', error); // Consider translating this log message too
+            Swal.fire(
+                i18n.global.t('common.error'),
+                error.response?.data?.message || i18n.global.t('locations.errorDeletingLocation'),
+                'error'
+            );
+        }
+    }
 };
 
 onMounted(fetchLocations);
@@ -92,36 +123,36 @@ defineExpose({
 <template>
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Your Locations</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ $t('locations.yourLocations') }}</h6>
             <button class="btn btn-success btn-sm" @click="openCreateLocationModal">
-                <i class="fas fa-plus"></i> Create New Location
+                <i class="fas fa-plus"></i> {{ $t('locations.createNewLocation') }}
             </button>
         </div>
         <div class="card-body">
             <div v-if="loading" class="text-center">
                 <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
+                    <span class="sr-only">{{ $t('common.loading') }}</span>
                 </div>
-                <p class="mt-2">Fetching locations...</p>
+                <p class="mt-2">{{ $t('locations.fetchingLocations') }}</p>
             </div>
             <div v-else-if="errorMessage" class="alert alert-danger" role="alert">
                 {{ errorMessage }}
             </div>
             <div v-else-if="sortedLocations.length === 0" class="alert alert-info" role="alert">
-                No locations found. Create your first location!
+                {{ $t('locations.noLocationsFound') }}
             </div>
             <div v-else class="table-responsive">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th @click="toggleSortOrder" style="cursor: pointer;">
-                                Name
+                                {{ $t('locations.name') }}
                                 <i :class="{ 'fas fa-sort-up': sortOrder === 'asc', 'fas fa-sort-down': sortOrder === 'desc' }"></i>
                             </th>
-                            <th>Address</th>
-                            <th>Latitude</th>
-                            <th>Longitude</th>
-                            <th>Actions</th>
+                            <th>{{ $t('locations.address') }}</th>
+                            <th>{{ $t('locations.latitude') }}</th>
+                            <th>{{ $t('locations.longitude') }}</th>
+                            <th>{{ $t('common.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,10 +163,10 @@ defineExpose({
                             <td>{{ location.longitude }}</td>
                             <td>
                                 <button @click="openEditLocationModal(location)" class="btn btn-info btn-sm mr-1">
-                                    <i class="fas fa-edit"></i> Edit
+                                    <i class="fas fa-edit"></i> {{ $t('locations.editLocation') }}
                                 </button>
                                 <button @click="handleDeleteLocation(location.id)" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i> Delete
+                                    <i class="fas fa-trash"></i> {{ $t('locations.deleteLocation') }}
                                 </button>
                             </td>
                         </tr>

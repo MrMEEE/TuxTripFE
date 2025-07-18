@@ -3,12 +3,14 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import { apiService } from '@/services/apiService';
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 const username = ref('');
 const password = ref('');
 const errorMessage = ref('');
 const router = useRouter();
 const authStore = useAuthStore();
+const i18n = useI18n(); // Initialize useI18n
 
 const handleLogin = async () => {
     errorMessage.value = '';
@@ -32,9 +34,9 @@ const handleLogin = async () => {
         if (error.response && error.response.data && error.response.data.message) {
             errorMessage.value = error.response.data.message;
         } else {
-            errorMessage.value = 'Login fejlede. Tjek dine legitimationsoplysninger.';
+            errorMessage.value = i18n.global.t('login.invalidCredentials'); // Translated
         }
-        console.error("Login failed:", error);
+        console.error("Login failed:", error); // Consider translating this log message too
     } finally {
         // Reset the loading state
         authStore.loading = false;
@@ -53,21 +55,21 @@ const handleLogin = async () => {
                             <div>
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Velkommen til TuxTrip!</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">{{ $t('login.title') }}</h1>
                                     </div>
                                     <form class="user" @submit.prevent="handleLogin">
                                         <div class="form-group">
                                             <input type="text" class="form-control form-control-user"
                                                 id="exampleInputUsername" aria-describedby="usernameHelp"
-                                                placeholder="Indtast brugernavn..." v-model="username" required>
+                                                :placeholder="$t('login.username')" v-model="username" required>
                                         </div>
                                         <div class="form-group">
                                             <input type="password" class="form-control form-control-user"
-                                                id="exampleInputPassword" placeholder="Password" v-model="password" required>
+                                                id="exampleInputPassword" :placeholder="$t('login.password')" v-model="password" required>
                                         </div>
                                         <button type="submit" class="btn btn-primary btn-user btn-block" :disabled="authStore.loading">
-                                            <span v-if="authStore.loading">Logger ind...</span>
-                                            <span v-else>Login</span>
+                                            <span v-if="authStore.loading">{{ $t('common.loading') }}</span>
+                                            <span v-else>{{ $t('login.loginButton') }}</span>
                                         </button>
                                     </form>
                                     <hr>

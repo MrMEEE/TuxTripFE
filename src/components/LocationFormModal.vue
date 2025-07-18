@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, defineProps, defineEmits } from 'vue';
 import { apiService } from '@/services/apiService';
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 // Define props: show to control visibility, locationData for editing
 const props = defineProps({
@@ -16,6 +17,7 @@ const props = defineProps({
 
 // Define emits: close to hide modal, locationSaved to notify parent of save
 const emits = defineEmits(['close', 'locationSaved']);
+const i18n = useI18n(); // Initialize useI18n
 
 // Form state
 const locationForm = ref({
@@ -97,8 +99,8 @@ const lookupAddress = async () => {
                 showSuggestions.value = false;
             }
         } catch (error) {
-            formErrors.value.addressLookup = error.message || 'Error during address lookup.';
-            console.error('Error during address lookup:', error);
+            formErrors.value.addressLookup = error.message || i18n.global.t('locations.errorAddressLookup');
+            console.error(i18n.global.t('locations.errorAddressLookup'), error);
             suggestions.value = [];
             showSuggestions.value = false;
         }
@@ -132,11 +134,11 @@ const validateForm = () => {
     let isValid = true;
 
     if (!locationForm.value.name) {
-        formErrors.value.name = 'Name is required.';
+        formErrors.value.name = i18n.global.t('locations.nameRequired');
         isValid = false;
     }
     if (!locationForm.value.address) {
-        formErrors.value.address = 'Address is required.';
+        formErrors.value.address = i18n.global.t('locations.addressRequired');
         isValid = false;
     }
 
@@ -144,11 +146,11 @@ const validateForm = () => {
     const lonNum = parseFloat(locationForm.value.longitude);
 
     if (locationForm.value.latitude === null || isNaN(latNum)) {
-        formErrors.value.latitude = 'Latitude is required and must be a number.';
+        formErrors.value.latitude = i18n.global.t('locations.latitudeRequired');
         isValid = false;
     }
     if (locationForm.value.longitude === null || isNaN(lonNum)) {
-        formErrors.value.longitude = 'Longitude is required and must be a number.';
+        formErrors.value.longitude = i18n.global.t('locations.longitudeRequired');
         isValid = false;
     }
 
@@ -174,16 +176,16 @@ const handleSubmit = async () => {
 
         if (locationForm.value.id) {
             await apiService.updateLocation(locationForm.value.id, payload);
-            console.log('Location updated successfully!');
+            console.log('Location updated successfully!'); // Consider translating this log message too
         } else {
             await apiService.createLocation(payload);
-            console.log('Location created successfully!');
+            console.log('Location created successfully!'); // Consider translating this log message too
         }
         emits('locationSaved'); // Notify parent that a location was saved
         handleClose(); // Close the modal
     } catch (error) {
-        console.error('Error saving location:', error.response?.data || error.message);
-        formErrors.value.api = error.response?.data?.message || 'Error saving location.';
+        console.error('Error saving location:', error.response?.data || error.message); // Consider translating this log message too
+        formErrors.value.api = error.response?.data?.message || i18n.global.t('locations.errorSavingLocation');
     } finally {
         isSubmitting.value = false;
     }
@@ -215,7 +217,7 @@ const handleAddressInputBlur = () => {
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ locationForm.id ? 'Edit Location' : 'Create New Location' }}</h5>
+                    <h5 class="modal-title">{{ locationForm.id ? $t('locations.editLocation') : $t('locations.createNewLocation') }}</h5>
                     <button type="button" class="close" @click="handleClose" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -226,12 +228,12 @@ const handleAddressInputBlur = () => {
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group">
-                            <label for="locationName">Name</label>
+                            <label for="locationName">{{ $t('locations.name') }}</label>
                             <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.name }" id="locationName" v-model="locationForm.name">
                             <div class="invalid-feedback" v-if="formErrors.name">{{ formErrors.name }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="locationAddress">Address</label>
+                            <label for="locationAddress">{{ $t('locations.address') }}</label>
                             <input
                                 type="text"
                                 class="form-control"
@@ -256,22 +258,22 @@ const handleAddressInputBlur = () => {
                             </ul>
                         </div>
                         <div class="form-group">
-                            <label for="locationLatitude">Latitude</label>
+                            <label for="locationLatitude">{{ $t('locations.latitude') }}</label>
                             <input type="number" step="any" class="form-control" :class="{ 'is-invalid': formErrors.latitude }" id="locationLatitude" v-model="locationForm.latitude">
                             <div class="invalid-feedback" v-if="formErrors.latitude">{{ formErrors.latitude }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="locationLongitude">Longitude</label>
+                            <label for="locationLongitude">{{ $t('locations.longitude') }}</label>
                             <input type="number" step="any" class="form-control" :class="{ 'is-invalid': formErrors.longitude }" id="locationLongitude" v-model="locationForm.longitude">
                             <div class="invalid-feedback" v-if="formErrors.longitude">{{ formErrors.longitude }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="locationDescription">Description (Optional)</label>
+                            <label for="locationDescription">{{ $t('locations.description') }}</label>
                             <textarea class="form-control" id="locationDescription" v-model="locationForm.description" rows="3"></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Saving...' : (locationForm.id ? 'Update Location' : 'Create Location') }}
+                            {{ isSubmitting ? $t('common.saving') : (locationForm.id ? $t('locations.updateLocation') : $t('locations.createLocation')) }}
                         </button>
                     </form>
                 </div>
@@ -318,6 +320,7 @@ const handleAddressInputBlur = () => {
     border: 1px solid #ddd;
     border-top: none;
     box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    background-color: white;
 }
 .list-group-item {
     cursor: pointer;

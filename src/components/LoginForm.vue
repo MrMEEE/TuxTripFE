@@ -9,7 +9,7 @@
                             <div class="col-lg-6">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Velkommen tilbage!</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">{{ $t('login.title') }}</h1>
                                     </div>
                                     <form class="user" @submit.prevent="handleLogin">
                                         <div class="form-group">
@@ -17,7 +17,7 @@
                                                 type="text"
                                                 class="form-control form-control-user"
                                                 id="exampleInputUsername"
-                                                placeholder="Brugernavn"
+                                                :placeholder="$t('login.username')"
                                                 v-model="username"
                                                 required
                                             />
@@ -27,14 +27,14 @@
                                                 type="password"
                                                 class="form-control form-control-user"
                                                 id="exampleInputPassword"
-                                                placeholder="Password"
+                                                :placeholder="$t('login.password')"
                                                 v-model="password"
                                                 required
                                             />
                                         </div>
                                         <button type="submit" class="btn btn-primary btn-user btn-block" :disabled="authStore.loading">
-                                            <span v-if="authStore.loading">Logger ind...</span>
-                                            <span v-else>Login</span>
+                                            <span v-if="authStore.loading">{{ $t('common.loading') }}</span>
+                                            <span v-else>{{ $t('login.loginButton') }}</span>
                                         </button>
                                     </form>
                                     <hr />
@@ -45,7 +45,7 @@
                                         {{ successMessage }}
                                     </div>
                                     <div class="text-center">
-                                        <a class="small" href="#" @click.prevent="goToRegister">Opret konto!</a>
+                                        <a class="small" href="#" @click.prevent="goToRegister">Opret konto!</a> <!-- Consider adding a translation key for 'Opret konto!' e.g., login.createAccount -->
                                     </div>
                                 </div>
                             </div>
@@ -62,12 +62,14 @@ import { ref } from 'vue';
 import { apiService } from '@/services/apiService';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore'; // Import your auth store
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 const username = ref('');
 const password = ref('');
 const successMessage = ref('');
 const router = useRouter();
 const authStore = useAuthStore(); // Get an instance of the store
+const i18n = useI18n(); // Initialize useI18n
 
 const handleLogin = async () => {
     // Clear any previous success messages
@@ -83,7 +85,7 @@ const handleLogin = async () => {
         await authStore.login(responseData);
         
         // 3. Set a temporary success message
-        successMessage.value = 'Login succesfuld!';
+        successMessage.value = 'Login succesfuld!'; // Consider adding a translation key for 'Login succesfuld!' e.g., login.loginSuccessful
         
         // 4. Redirect after a small delay to let the user see the success message
         setTimeout(() => {
@@ -94,7 +96,7 @@ const handleLogin = async () => {
         // The error message is now handled directly by the store
         // The store's login action will catch the error and set authStore.authError
         // The `v-if` condition in the template will display it.
-        console.error('Login error:', error);
+        console.error('Login error:', error); // Consider translating this log message too
     }
 };
 

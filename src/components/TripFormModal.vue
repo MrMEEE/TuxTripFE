@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 // Import leaflet-routing-machine and its CSS
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 // FIX: Leaflet icon paths for default markers
 L.Icon.Default.mergeOptions({
@@ -16,6 +17,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
+const i18n = useI18n(); // Initialize useI18n
 
 // Define props: show to control visibility, tripData for editing
 const props = defineProps({
@@ -134,13 +136,13 @@ const setupRoutingMachine = () => {
                 mapApiError.value = null; // Clear any previous errors
             } else {
                 mapCalculatedDistance.value = null;
-                mapApiError.value = 'No route found for the selected points.';
+                mapApiError.value = i18n.global.t('trips.noRouteFound');
             }
         });
 
         routeControl.value.on('routingerror', (e) => {
             console.error('Routing error:', e.error.message);
-            mapApiError.value = `Error calculating route: ${e.error.message}`;
+            mapApiError.value = i18n.global.t('trips.errorCalculatingRoute') + `: ${e.error.message}`;
             mapCalculatedDistance.value = null;
         });
 
@@ -149,7 +151,7 @@ const setupRoutingMachine = () => {
             // This event fires when user drags markers or adds waypoints
             // The route is automatically recalculated by LRM.
             // The 'routesfound' event will then update mapCalculatedDistance.
-            console.log("Waypoints changed:", e.waypoints);
+            console.log("Waypoints changed:", e.waypoints); // Consider translating this log message too
         });
 
     } else if (map.value) {
@@ -165,7 +167,7 @@ const fetchLocations = async () => {
     try {
         locations.value = await apiService.getLocations();
     } catch (error) {
-        console.error('Error fetching locations:', error);
+        console.error('Error fetching locations:', error); // Consider translating this log message too
     }
 };
 
@@ -229,15 +231,15 @@ const useMapDistance = () => {
 
 const validateForm = () => {
     formErrors.value = {};
-    if (!tripForm.value.date) formErrors.value.date = 'Date is required.';
-    if (!tripForm.value.start_location_id) formErrors.value.start_location_id = 'Start location is required.';
-    if (!tripForm.value.end_location_id) formErrors.value.end_location_id = 'End location is required.';
-    if (!tripForm.value.purpose) formErrors.value.purpose = 'Purpose is required.';
+    if (!tripForm.value.date) formErrors.value.date = i18n.global.t('trips.dateRequired');
+    if (!tripForm.value.start_location_id) formErrors.value.start_location_id = i18n.global.t('trips.startLocationRequired');
+    if (!tripForm.value.end_location_id) formErrors.value.end_location_id = i18n.global.t('trips.endLocationRequired');
+    if (!tripForm.value.purpose) formErrors.value.purpose = i18n.global.t('trips.purposeRequired');
 
     if (tripForm.value.distance_km !== null && tripForm.value.distance_km !== '') {
         const parsedDistance = parseFloat(tripForm.value.distance_km);
         if (isNaN(parsedDistance) || parsedDistance <= 0) {
-            formErrors.value.distance_km = 'Distance must be a positive number.';
+            formErrors.value.distance_km = i18n.global.t('trips.distancePositive');
         }
     }
     return Object.keys(formErrors.value).length === 0;
@@ -262,16 +264,16 @@ const handleSubmit = async () => {
 
         if (tripForm.value.id) {
             await apiService.updateTrip(tripForm.value.id, payload);
-            console.log('Trip updated successfully!');
+            console.log('Trip updated successfully!'); // Consider translating this log message too
         } else {
             await apiService.createTrip(payload);
-            console.log('Trip created successfully!');
+            console.log('Trip created successfully!'); // Consider translating this log message too
         }
         emits('tripSaved');
         handleClose();
     } catch (error) {
-        console.error('Error saving trip:', error.response?.data || error.message);
-        formErrors.value.api = error.response?.data?.message || 'Error saving trip.';
+        console.error('Error saving trip:', error.response?.data || error.message); // Consider translating this log message too
+        formErrors.value.api = error.response?.data?.message || i18n.global.t('trips.errorSavingTrip');
     } finally {
         isSubmitting.value = false;
     }
@@ -285,7 +287,7 @@ const handleClose = () => {
 const createReturnTrip = async () => {
     // Ensure both start and end locations are selected for a valid return trip
     if (!tripForm.value.start_location_id || !tripForm.value.end_location_id) {
-        mapApiError.value = 'Select both start and end locations to create a return trip.';
+        mapApiError.value = i18n.global.t('trips.selectStartEndForReturn');
         return;
     }
 
@@ -297,7 +299,7 @@ const createReturnTrip = async () => {
         const originalEndLoc = getLocationById(tripForm.value.end_location_id);
 
         if (!originalStartLoc || !originalEndLoc) {
-            mapApiError.value = 'Could not find details for the selected locations.';
+            mapApiError.value = i18n.global.t('trips.couldNotFindLocationDetails');
             isSubmitting.value = false;
             return;
         }
@@ -310,7 +312,7 @@ const createReturnTrip = async () => {
             date: tripForm.value.date, // Or new Date().toISOString().slice(0, 10) for today, or add 1 day
             start_location_id: tripForm.value.end_location_id, // Start of return is end of original
             end_location_id: tripForm.value.start_location_id,   // End of return is start of original
-            purpose: `Return: ${originalEndLoc.name} to ${originalStartLoc.name}`, // Dynamic purpose
+            purpose: `${i18n.global.t('trips.return')}: ${originalEndLoc.name} ${i18n.global.t('common.to')} ${originalStartLoc.name}`, // Dynamic purpose
             // You can decide if the distance should be null (for re-calculation by map)
             // or if it should be copied from mapCalculatedDistance or original tripForm.distance_km
             distance_km: mapCalculatedDistance.value ? parseFloat(mapCalculatedDistance.value) : null,
@@ -322,7 +324,7 @@ const createReturnTrip = async () => {
         // (You might add a simplified validation here for user feedback)
 
         await apiService.createTrip(returnTripPayload);
-        console.log('Return trip created successfully!');
+        console.log('Return trip created successfully!'); // Consider translating this log message too
 
         // Notify parent component that a trip (the new return trip) was saved
         emits('tripSaved');
@@ -332,8 +334,8 @@ const createReturnTrip = async () => {
         handleClose();
 
     } catch (error) {
-        console.error('Error creating return trip:', error.response?.data || error.message);
-        mapApiError.value = error.response?.data?.message || 'Error creating return trip.';
+        console.error('Error creating return trip:', error.response?.data || error.message); // Consider translating this log message too
+        mapApiError.value = error.response?.data?.message || i18n.global.t('trips.errorCreatingReturnTrip');
     } finally {
         isSubmitting.value = false;
     }
@@ -347,7 +349,7 @@ const createReturnTrip = async () => {
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ tripForm.id ? 'Edit Trip' : 'Create New Trip' }}</h5>
+                    <h5 class="modal-title">{{ tripForm.id ? $t('trips.editTrip') : $t('trips.createTrip') }}</h5>
                     <button type="button" class="close" @click="handleClose" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -358,58 +360,58 @@ const createReturnTrip = async () => {
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group">
-                            <label for="tripDate">Date</label>
+                            <label for="tripDate">{{ $t('trips.date') }}</label>
                             <input type="date" class="form-control" :class="{ 'is-invalid': formErrors.date }" id="tripDate" v-model="tripForm.date">
                             <div class="invalid-feedback" v-if="formErrors.date">{{ formErrors.date }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="startLocation">From Location</label>
+                            <label for="startLocation">{{ $t('trips.from') }}</label>
                             <select class="form-control" :class="{ 'is-invalid': formErrors.start_location_id }" id="startLocation" v-model="tripForm.start_location_id">
-                                <option :value="null" disabled>Select location</option>
+                                <option :value="null" disabled>{{ $t('common.selectLocation') }}</option>
                                 <option v-for="location in locations" :key="location.id" :value="location.id">{{ location.name }}</option>
                             </select>
                             <div class="invalid-feedback" v-if="formErrors.start_location_id">{{ formErrors.start_location_id }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="endLocation">To Location</label>
+                            <label for="endLocation">{{ $t('trips.to') }}</label>
                             <select class="form-control" :class="{ 'is-invalid': formErrors.end_location_id }" id="endLocation" v-model="tripForm.end_location_id">
-                                <option :value="null" disabled>Select location</option>
+                                <option :value="null" disabled>{{ $t('common.selectLocation') }}</option>
                                 <option v-for="location in locations" :key="location.id" :value="location.id">{{ location.name }}</option>
                             </select>
                             <div class="invalid-feedback" v-if="formErrors.end_location_id">{{ formErrors.end_location_id }}</div>
                         </div>
                         <div class="form-group">
-                            <label for="purpose">Purpose</label>
+                            <label for="purpose">{{ $t('trips.purpose') }}</label>
                             <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.purpose }" id="purpose" v-model="tripForm.purpose">
                             <div class="invalid-feedback" v-if="formErrors.purpose">{{ formErrors.purpose }}</div>
                         </div>
                         
                         <div class="form-group">
-                            <label>Route Visualization and Distance:</label>
+                            <label>{{ $t('trips.routeVisualization') }}</label>
                             <div id="tripMap" style="height: 300px; width: 100%; border: 1px solid #ddd; margin-bottom: 10px;"></div>
                             <div v-if="mapApiError" class="alert alert-warning" role="alert">
                                 {{ mapApiError }}
                             </div>
                             <div v-if="mapCalculatedDistance !== null" class="d-flex justify-content-between align-items-center">
-                                <strong>Calculated distance: {{ mapCalculatedDistance }} km</strong>
-                                <button type="button" class="btn btn-sm btn-info" @click="useMapDistance">Use this distance</button>
+                                <strong>{{ $t('trips.calculatedDistance') }} {{ mapCalculatedDistance }} km</strong>
+                                <button type="button" class="btn btn-sm btn-info" @click="useMapDistance">{{ $t('trips.useThisDistance') }}</button>
                             </div>
-                            <p v-else class="text-muted">Select start and end locations to see the route on the map.</p>
+                            <p v-else class="text-muted">{{ $t('trips.selectLocationsForRoute') }}</p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="distance">Distance (km)</label>
+                            <label for="distance">{{ $t('trips.distanceKm') }}</label>
                             <input type="number" step="0.1" class="form-control" :class="{ 'is-invalid': formErrors.distance_km }" id="distance" v-model="tripForm.distance_km">
                             <div class="invalid-feedback" v-if="formErrors.distance_km">{{ formErrors.distance_km }}</div>
-                            <small class="form-text text-muted">Leave empty for automatic calculation based on locations, or use the "Use this distance" button.</small>
+                            <small class="form-text text-muted">{{ $t('trips.leaveEmptyForAuto') }}</small>
                         </div>
                         
                         <button type="button" class="btn btn-primary" @click="createReturnTrip" :disabled="isSubmitting || !tripForm.start_location_id || !tripForm.end_location_id" v-if="tripForm.id !== null">
-                           {{ isSubmitting ? 'Creating return...' : 'Create return' }}
+                           {{ isSubmitting ? $t('trips.creatingReturn') : $t('trips.createReturn') }}
                         </button>
 
                         <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Saving...' : (tripForm.id ? 'Update Trip' : 'Create Trip') }}
+                            {{ isSubmitting ? $t('common.saving') : (tripForm.id ? $t('trips.updateTrip') : $t('trips.createTrip')) }}
                         </button>
                     </form>
                 </div>

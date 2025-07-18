@@ -5,7 +5,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ isEditMode ? 'Edit User' : 'Create New User' }}</h5>
+                    <h5 class="modal-title">{{ isEditMode ? $t('userAdmin.editUser') : $t('userAdmin.createUser') }}</h5>
                     <button type="button" class="close" @click="handleClose" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -16,24 +16,24 @@
                     </div>
                     <form @submit.prevent="handleSubmit">
                         <div class="form-group mb-3">
-                            <label for="username">Username</label>
+                            <label for="username">{{ $t('userAdmin.username') }}</label>
                             <input type="text" class="form-control" id="username" v-model="userForm.username" required>
                         </div>
                         <div v-if="!isEditMode" class="form-group mb-3">
-                            <label for="password">Password</label>
+                            <label for="password">{{ $t('userAdmin.password') }}</label>
                             <input type="password" class="form-control" id="password" v-model="userForm.password" required>
                         </div>
                         <div v-if="!isEditMode" class="form-group mb-3">
-                            <label for="confirmPassword">Repeat Password</label>
+                            <label for="confirmPassword">{{ $t('userAdmin.repeatPassword') }}</label>
                             <input type="password" class="form-control" id="confirmPassword" v-model="userForm.confirmPassword" required>
                         </div>
                         <div class="form-group form-check mb-3">
                             <input type="checkbox" class="form-check-input" id="is_admin" v-model="userForm.is_admin">
-                            <label class="form-check-label" for="is_admin">Administrator?</label>
+                            <label class="form-check-label" for="is_admin">{{ $t('userAdmin.isAdmin') }}</label>
                         </div>
                         
                         <button type="submit" class="btn btn-primary">
-                            {{ isEditMode ? 'Update User' : 'Create User' }}
+                            {{ isEditMode ? $t('userAdmin.updateUser') : $t('userAdmin.createUser') }}
                         </button>
                     </form>
                 </div>
@@ -44,6 +44,7 @@
 
 <script setup>
 import { ref, watch, defineProps, defineEmits, computed } from 'vue';
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 const props = defineProps({
     show: {
@@ -57,6 +58,7 @@ const props = defineProps({
 });
 
 const emits = defineEmits(['close', 'userSaved']);
+const i18n = useI18n(); // Initialize useI18n
 
 const userForm = ref({
     id: null,
@@ -98,7 +100,7 @@ const handleSubmit = () => {
     formErrors.value = {};
 
     if (!isEditMode.value && userForm.value.password !== userForm.value.confirmPassword) {
-        formErrors.value.passwordMismatch = 'Passwords do not match.';
+        formErrors.value.passwordMismatch = i18n.global.t('userAdmin.passwordMismatch');
         return;
     }
 
